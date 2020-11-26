@@ -35,3 +35,6 @@ def main():
                             description=f"{description} (Version: {__version__})")
     
     #TODO Implement this method
+
+if __name__ == "__main__":
+    main()
