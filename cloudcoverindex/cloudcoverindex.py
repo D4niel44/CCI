@@ -1,5 +1,12 @@
-from PIL import Image
+#TODO add env python version control
 
+import sys
+
+from PIL import Image
+from argparse import ArgumentParser, RawDescriptionHelpFormatter
+
+description = "Cloud Cover Index: Determine cloud cover index from jpeg image"
+__version__ = "0.0.0"
 
 def mask_filter(image, mask):
     pass #TODO Implement this method
@@ -21,3 +28,10 @@ class CloudCoverApp:
 
     def save(path):
         pass #TODO Implement this method
+
+def main():
+
+    parser = ArgumentParser(formatter_class=RawDescriptionHelpFormatter,
+                            description=f"{description} (Version: {__version__})")
+    
+    #TODO Implement this method
