@@ -14,11 +14,12 @@ def mask_filter(image, mask):
 
 
 def red_blue_filter(image):
-    """Applies an RGB filter to each pixel in the image
+    """Applies an R/B filter to each pixel in the image
     Applies a pixel wise filter to the provided image:
     Converts a pixel to white if the Red/Blue component ratio
     is bigger than 0.95, otherwise converts the pixel to black.
     Ignores transparent pixels.
+    Requires The image to be in RGBA mode.
     :param image: A :class:`PIL.Image` image.
     :type image: class:`PIL.Image`
     :return: A :class:`PIL.Image` image.
@@ -26,6 +27,8 @@ def red_blue_filter(image):
     """
     if image is None:
         raise ValueError("Invalid None argument")
+    if image.mode != "RGBA":
+        raise ValueError("Only RGBA images are supported")
 
     width, height = image.size
 
