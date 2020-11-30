@@ -122,15 +122,6 @@ class CloudCoverApp:
         pass  # TODO Implement this method
 
 
-def main():
-    parser = ArgumentParser(
-        formatter_class=RawDescriptionHelpFormatter,
-        description=f"{description} (Version: {__version__})")
-
-    def save(path):
-        pass  # TODO Implement this method
-
-
 # TODO simplify main() implementation
 def main():
     arguments = []
