@@ -86,8 +86,8 @@ def test_red_blue_filter(subtests):
     Output:
     - All white, All black, Both
     """
-    white_pixel = (255, 255, 255)
-    black_pixel = (0, 0, 0)
+    white_pixel = 255
+    black_pixel = 0
 
     width = 100
     height = 100
@@ -133,13 +133,18 @@ def test_red_blue_filter(subtests):
     with subtests.test(msg="R/B < 0.95 Close to 0.95", image=image):
         assert_color_all_pixels(image, size, black_pixel)
 
+    # TestCase Alpha channel of 0
+    image = Image.new("RGBA", size, (0, 0, 0, 0))
+    with subtests.test(msg="Alpha Channel value 0", image=image):
+        assert_color_all_pixels(image, size, black_pixel)
 
-def assert_color_all_pixels(image, size, expected_pixel):
+
+def assert_color_all_pixels(image, size, expected_pixel_value):
     res_pixels_map = cci.red_blue_filter(image).load()
     for x in range(size[0]):
         for y in range(size[1]):
             actual_pixel = res_pixels_map[x, y]
-            if actual_pixel[3] == 0:
+            if actual_pixel[1] == 0:
                 # transparent pixels are ignored
                 continue
-            assert equals_rgb_band(actual_pixel, expected_pixel)
+            assert actual_pixel[0] == expected_pixel_value

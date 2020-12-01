@@ -66,12 +66,12 @@ def red_blue_filter(image):
     Applies a pixel wise filter to the provided image:
     Converts a pixel to white if the Red/Blue component ratio
     is bigger than 0.95, otherwise converts the pixel to black.
-    Ignores transparent pixels.
+    For the pixel is transparent the resulting greyscale band value will be 0.
     Requires The image to be in RGBA mode.
     :param image: A :class:`PIL.Image` image.
     :type image: class:`PIL.Image`
-    :return: A :class:`PIL.Image` image.
-    :rtype: class:`PIL.Image
+    :return: A :class:`PIL.Image` LA image( greyscale with alpha channel).
+    :rtype: class:`PIL.Image`
     """
     if image is None:
         raise TypeError("Invalid None type argument")
@@ -81,24 +81,32 @@ def red_blue_filter(image):
     width, height = image.size
 
     img_pixels = image.load()
+    # Single band image for storing the computed filter values for each pixel
+    greyscale_band = Image.new("L", image.size, color=0)
+    greyscale_band_pixels = greyscale_band.load()
     for x in range(width):
         for y in range(height):
-            img_pixels[x, y] = __red_blue_pixel_filter(img_pixels[x, y])
+            greyscale_band_pixels[x, y] = __red_blue_pixel_filter(img_pixels[x, y])
 
-    return image
+    # Return the result of merging the computed greyscale image with the original alpha channel.
+    return Image.merge("LA", (greyscale_band, image.split()[3]))
 
 
 # TODO Try optimizing the method by precalculating this function for each 256*256 possible value
 def __red_blue_pixel_filter(pixel):
-    white_pixel = (255, 255, 255)
-    black_pixel = (0, 0, 0)
+    """This method applies the filter defined above to a pixel
+    Returns an int value (255 or 0) as the result of applying the filter
+    to teh pixel. If the received pixel is transparent returns 0.
+    """
+    white_pixel = 255
+    black_pixel = 0
 
     red_band_value = pixel[0]
     blue_band_value = pixel[2]
     alpha_band_value = pixel[3]
 
     if alpha_band_value == 0:  # transparent pixel case
-        return pixel
+        return black_pixel
     if blue_band_value == 0:  # 0 Blue component case
         return white_pixel
     if red_band_value / blue_band_value > 0.95:
