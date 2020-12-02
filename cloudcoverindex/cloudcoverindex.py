@@ -3,7 +3,7 @@
 
 import sys
 
-from PIL import Image
+from PIL import Image, ImageFilter
 from argparse import ArgumentParser, RawDescriptionHelpFormatter
 
 description = "Cloud Cover Index: Determine cloud cover index from jpeg image"
@@ -116,7 +116,61 @@ def __red_blue_pixel_filter(pixel):
 
 
 def convolution_filter(image):
-    pass  # TODO Implement this method
+    """Applies a convolution filter to the provided image.
+    The convolution filter is a simple mean 5x5 convolution filter but dividing the sum by 255.
+    (Can be though of as counting every white pixel). Then the results are converted to binary (0, 255)
+    values following the next rules.
+    0 <= value <= 7 -> the returned pixel value is 0.
+    7 < value <= 16 -> the returned pixel value doesnt change.
+    16 < value <= 25 -> the returned pixel value is 255.
+    Note that this filter is only applied to the L band of the image and in order to work properly
+    the L band values must be either 0 or 255.
+    Requires the image to be in mode LA.
+    :param image: An Image in LA mode.
+    :return: The image that results from applying the convolution filter described
+    above to the provided image. The returned image contains two channels and the alpha channel
+    remains unchanged from the original image.
+    """
+    if image.mode != "LA":
+        raise ValueError("Only LA images allowed")
+
+    # Initialize kernel
+    kernel_size = (5, 5)
+    kernel = [
+        1, 1, 1, 1, 1,
+        1, 1, 1, 1, 1,
+        1, 1, 1, 1, 1,
+        1, 1, 1, 1, 1,
+        1, 1, 1, 1, 1,
+    ]
+    kernel_filter = ImageFilter.Kernel(kernel_size, kernel, scale=255)
+    image_l_band, image_alpha_band = image.split()
+    convolved_band = image_l_band.filter(kernel_filter)
+    convolved_band = __select_output_pixels(image_l_band, convolved_band)
+    return Image.merge("LA", (convolved_band, image_alpha_band))
+
+
+def __select_output_pixels(original_band, convolved_band):
+    original_pixels = original_band.load()
+    convolved_pixels = convolved_band.load()
+
+    width, height = original_band.size
+    for x in range(width):
+        for y in range(height):
+            convolved_pixels[x, y] = __select_output_pixel(original_pixels[x, y], convolved_pixels[x, y])
+
+    return convolved_band
+
+
+def __select_output_pixel(original_pixel, convolved_pixel):
+    black_pixel = 0
+    white_pixel = 255
+
+    if convolved_pixel <= 7:
+        return black_pixel
+    if convolved_pixel <= 16:
+        return original_pixel
+    return white_pixel
 
 
 class CloudCoverApp:
