@@ -12,17 +12,21 @@ if __name__ == "__main__" and __package__ is None:
 
 import cloudcoverindex.cloudcoverindex as cci
 
-image = Image.open("data/sample_images/11838.jpg")
+image = Image.open("data/sample_images/11840.JPG")
 mask = Image.open("data/mask-1350-sq.png")
 
 # test with resizing
-#mask = mask.resize((mask.size[0] // 4, mask.size[1] // 4), Image.LANCZOS)
-#image = image.resize((image.size[0] // 4, image.size[1] // 4), Image.LANCZOS)
+mask = mask.resize((mask.size[0] // 8, mask.size[1] // 8), Image.LANCZOS)
+image = image.resize((image.size[0] // 8, image.size[1] // 8), Image.LANCZOS)
 
 result = cci.mask_filter(image, mask)
 result.show()
 print(result.size)
 
-result_after_filter = cci.red_blue_filter(result)
-result_after_filter.show()
-print(result_after_filter.size)
+result_after_rb_filter = cci.red_blue_filter(result)
+result_after_rb_filter.show()
+print(result_after_rb_filter.size)
+
+final_result = cci.convolution_filter(result_after_rb_filter)
+final_result.show()
+print(final_result.size)
