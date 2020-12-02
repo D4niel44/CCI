@@ -86,8 +86,8 @@ def test_red_blue_filter(subtests):
     Output:
     - All white, All black, Both
     """
-    white_pixel = (255, 255, 255)
-    black_pixel = (0, 0, 0)
+    white_pixel = 255
+    black_pixel = 0
 
     width = 100
     height = 100
@@ -133,13 +133,190 @@ def test_red_blue_filter(subtests):
     with subtests.test(msg="R/B < 0.95 Close to 0.95", image=image):
         assert_color_all_pixels(image, size, black_pixel)
 
+    # TestCase Alpha channel of 0
+    image = Image.new("RGBA", size, (0, 0, 0, 0))
+    with subtests.test(msg="Alpha Channel value 0", image=image):
+        assert_color_all_pixels(image, size, black_pixel)
 
-def assert_color_all_pixels(image, size, expected_pixel):
+
+def assert_color_all_pixels(image, size, expected_pixel_value):
     res_pixels_map = cci.red_blue_filter(image).load()
     for x in range(size[0]):
         for y in range(size[1]):
             actual_pixel = res_pixels_map[x, y]
-            if actual_pixel[3] == 0:
+            if actual_pixel[1] == 0:
                 # transparent pixels are ignored
                 continue
-            assert equals_rgb_band(actual_pixel, expected_pixel)
+            assert actual_pixel[0] == expected_pixel_value
+
+
+def test_convolution_filter(subtests):
+    """
+    Test partitions:
+    Instead of testing a big image, a simple 5x5 image is tested and the result
+    for the middle pixel is the one tested.
+    Middle pixel value: 0, 255
+    Convolution result: 0-7, 8-16, 17-25
+    """
+    size = (5, 5)
+
+    # TestCase Convolution result 0
+    kernel = [
+        0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0,
+    ]
+    image = image_from_kernel(kernel, size)
+    with subtests.test(msg="Convolution result 0", image=image):
+        assert_central_pixel_value(cci.convolution_filter(image), 0)
+
+    # TestCase Convolution result 5
+    kernel = [
+        0, 0, 0, 0, 1,
+        0, 1, 0, 0, 0,
+        0, 0, 1, 0, 0,
+        0, 0, 1, 0, 0,
+        0, 0, 0, 1, 0,
+    ]
+    image = image_from_kernel(kernel, size)
+    with subtests.test(msg="Convolution result 5", image=image):
+        assert_central_pixel_value(cci.convolution_filter(image), 0)
+
+    # TestCase Convolution result 7
+    kernel = [
+        0, 0, 1, 0, 1,
+        0, 1, 0, 0, 0,
+        0, 0, 1, 0, 0,
+        0, 0, 1, 0, 0,
+        0, 1, 0, 1, 0,
+    ]
+    image = image_from_kernel(kernel, size)
+    with subtests.test(msg="Convolution result 5", image=image):
+        assert_central_pixel_value(cci.convolution_filter(image), 0)
+
+    # TestCase Convolution result 8
+    kernel = [
+        0, 0, 1, 0, 1,
+        0, 1, 0, 1, 0,
+        0, 0, 0, 0, 1,
+        0, 0, 1, 0, 0,
+        0, 1, 0, 1, 0,
+    ]
+    image = image_from_kernel(kernel, size)
+    with subtests.test(msg="Convolution result 8, expected 0", image=image):
+        assert_central_pixel_value(cci.convolution_filter(image), 0)
+
+    # TestCase Convolution result 8
+    kernel = [
+        0, 0, 1, 0, 1,
+        0, 1, 0, 1, 0,
+        0, 0, 1, 0, 1,
+        0, 0, 1, 0, 0,
+        0, 1, 0, 0, 0,
+    ]
+    image = image_from_kernel(kernel, size)
+    with subtests.test(msg="Convolution result 8, expected 255", image=image):
+        assert_central_pixel_value(cci.convolution_filter(image), 255)
+
+    # TestCase Convolution result 9
+    kernel = [
+        0, 0, 1, 0, 1,
+        0, 1, 0, 1, 0,
+        0, 0, 1, 0, 0,
+        1, 0, 1, 0, 0,
+        0, 1, 0, 1, 0,
+    ]
+    image = image_from_kernel(kernel, size)
+    with subtests.test(msg="Convolution result 9, expected 255", image=image):
+        assert_central_pixel_value(cci.convolution_filter(image), 255)
+
+    # TestCase Convolution result 16
+    kernel = [
+        1, 0, 1, 1, 1,
+        0, 1, 0, 1, 0,
+        1, 0, 0, 0, 1,
+        1, 0, 1, 1, 1,
+        1, 1, 0, 1, 1,
+    ]
+    image = image_from_kernel(kernel, size)
+    with subtests.test(msg="Convolution result 16, expected 0", image=image):
+        assert_central_pixel_value(cci.convolution_filter(image), 0)
+
+    # TestCase Convolution result 16
+    kernel = [
+        1, 0, 1, 1, 1,
+        0, 1, 0, 1, 0,
+        1, 0, 1, 0, 0,
+        1, 0, 1, 1, 1,
+        1, 1, 0, 1, 1,
+    ]
+    image = image_from_kernel(kernel, size)
+    with subtests.test(msg="Convolution result 16, expected 255", image=image):
+        assert_central_pixel_value(cci.convolution_filter(image), 255)
+
+    # TestCase Convolution result 17
+    kernel = [
+        1, 0, 1, 1, 1,
+        0, 1, 0, 1, 1,
+        1, 0, 0, 1, 0,
+        1, 0, 1, 1, 1,
+        1, 1, 0, 1, 1,
+    ]
+    image = image_from_kernel(kernel, size)
+    with subtests.test(msg="Convolution result 17", image=image):
+        assert_central_pixel_value(cci.convolution_filter(image), 255)
+
+    # TestCase Convolution result 17
+    kernel = [
+        1, 0, 1, 1, 1,
+        0, 1, 0, 1, 1,
+        1, 0, 1, 0, 0,
+        1, 0, 1, 1, 1,
+        1, 1, 0, 1, 1,
+    ]
+    image = image_from_kernel(kernel, size)
+    with subtests.test(msg="Convolution result 17", image=image):
+        assert_central_pixel_value(cci.convolution_filter(image), 255)
+
+    # TestCase Convolution result 22
+    kernel = [
+        1, 1, 1, 1, 1,
+        0, 1, 1, 1, 1,
+        1, 0, 0, 1, 1,
+        1, 1, 1, 1, 1,
+        1, 1, 1, 1, 1,
+    ]
+    image = image_from_kernel(kernel, size)
+    with subtests.test(msg="Convolution result 22", image=image):
+        assert_central_pixel_value(cci.convolution_filter(image), 255)
+
+    # TestCase Convolution result 25
+    kernel = [
+        1, 1, 1, 1, 1,
+        1, 1, 1, 1, 1,
+        1, 1, 1, 1, 1,
+        1, 1, 1, 1, 1,
+        1, 1, 1, 1, 1,
+    ]
+    image = image_from_kernel(kernel, size)
+    with subtests.test(msg="Convolution result 25", image=image):
+        assert_central_pixel_value(cci.convolution_filter(image), 255)
+
+
+def image_from_kernel(kernel, size):
+    image = Image.new("LA", size, (0, 0))
+    image_pixels = image.load()
+    i = 0
+    for x in range(size[0]):
+        for y in range(size[1]):
+            image_pixels[x, y] = (255 * kernel[i], 255)
+            i += 1
+    return image
+
+
+def assert_central_pixel_value(result_image, expected_value):
+    result_pixels = result_image.load()
+    assert result_pixels[2, 2][0] == expected_value
+

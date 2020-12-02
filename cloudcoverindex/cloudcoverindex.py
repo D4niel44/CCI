@@ -3,7 +3,7 @@
 
 import sys
 
-from PIL import Image
+from PIL import Image, ImageFilter
 from argparse import ArgumentParser, RawDescriptionHelpFormatter
 
 description = "Cloud Cover Index: Determine cloud cover index from jpeg image"
@@ -66,12 +66,12 @@ def red_blue_filter(image):
     Applies a pixel wise filter to the provided image:
     Converts a pixel to white if the Red/Blue component ratio
     is bigger than 0.95, otherwise converts the pixel to black.
-    Ignores transparent pixels.
+    For the pixel is transparent the resulting greyscale band value will be 0.
     Requires The image to be in RGBA mode.
     :param image: A :class:`PIL.Image` image.
     :type image: class:`PIL.Image`
-    :return: A :class:`PIL.Image` image.
-    :rtype: class:`PIL.Image
+    :return: A :class:`PIL.Image` LA image( greyscale with alpha channel).
+    :rtype: class:`PIL.Image`
     """
     if image is None:
         raise TypeError("Invalid None type argument")
@@ -81,24 +81,32 @@ def red_blue_filter(image):
     width, height = image.size
 
     img_pixels = image.load()
+    # Single band image for storing the computed filter values for each pixel
+    greyscale_band = Image.new("L", image.size, color=0)
+    greyscale_band_pixels = greyscale_band.load()
     for x in range(width):
         for y in range(height):
-            img_pixels[x, y] = __red_blue_pixel_filter(img_pixels[x, y])
+            greyscale_band_pixels[x, y] = __red_blue_pixel_filter(img_pixels[x, y])
 
-    return image
+    # Return the result of merging the computed greyscale image with the original alpha channel.
+    return Image.merge("LA", (greyscale_band, image.split()[3]))
 
 
 # TODO Try optimizing the method by precalculating this function for each 256*256 possible value
 def __red_blue_pixel_filter(pixel):
-    white_pixel = (255, 255, 255)
-    black_pixel = (0, 0, 0)
+    """This method applies the filter defined above to a pixel
+    Returns an int value (255 or 0) as the result of applying the filter
+    to teh pixel. If the received pixel is transparent returns 0.
+    """
+    white_pixel = 255
+    black_pixel = 0
 
     red_band_value = pixel[0]
     blue_band_value = pixel[2]
     alpha_band_value = pixel[3]
 
     if alpha_band_value == 0:  # transparent pixel case
-        return pixel
+        return black_pixel
     if blue_band_value == 0:  # 0 Blue component case
         return white_pixel
     if red_band_value / blue_band_value > 0.95:
@@ -108,7 +116,61 @@ def __red_blue_pixel_filter(pixel):
 
 
 def convolution_filter(image):
-    pass  # TODO Implement this method
+    """Applies a convolution filter to the provided image.
+    The convolution filter is a simple mean 5x5 convolution filter but dividing the sum by 255.
+    (Can be though of as counting every white pixel). Then the results are converted to binary (0, 255)
+    values following the next rules.
+    0 <= value <= 7 -> the returned pixel value is 0.
+    7 < value <= 16 -> the returned pixel value doesnt change.
+    16 < value <= 25 -> the returned pixel value is 255.
+    Note that this filter is only applied to the L band of the image and in order to work properly
+    the L band values must be either 0 or 255.
+    Requires the image to be in mode LA.
+    :param image: An Image in LA mode.
+    :return: The image that results from applying the convolution filter described
+    above to the provided image. The returned image contains two channels and the alpha channel
+    remains unchanged from the original image.
+    """
+    if image.mode != "LA":
+        raise ValueError("Only LA images allowed")
+
+    # Initialize kernel
+    kernel_size = (5, 5)
+    kernel = [
+        1, 1, 1, 1, 1,
+        1, 1, 1, 1, 1,
+        1, 1, 1, 1, 1,
+        1, 1, 1, 1, 1,
+        1, 1, 1, 1, 1,
+    ]
+    kernel_filter = ImageFilter.Kernel(kernel_size, kernel, scale=255)
+    image_l_band, image_alpha_band = image.split()
+    convolved_band = image_l_band.filter(kernel_filter)
+    convolved_band = __select_output_pixels(image_l_band, convolved_band)
+    return Image.merge("LA", (convolved_band, image_alpha_band))
+
+
+def __select_output_pixels(original_band, convolved_band):
+    original_pixels = original_band.load()
+    convolved_pixels = convolved_band.load()
+
+    width, height = original_band.size
+    for x in range(width):
+        for y in range(height):
+            convolved_pixels[x, y] = __select_output_pixel(original_pixels[x, y], convolved_pixels[x, y])
+
+    return convolved_band
+
+
+def __select_output_pixel(original_pixel, convolved_pixel):
+    black_pixel = 0
+    white_pixel = 255
+
+    if convolved_pixel <= 7:
+        return black_pixel
+    if convolved_pixel <= 16:
+        return original_pixel
+    return white_pixel
 
 
 class CloudCoverApp:
