@@ -12,14 +12,16 @@ if __name__ == "__main__" and __package__ is None:
 
 import cloudcoverindex.cloudcoverindex as cci
 
-image = Image.open("data/sample_images/11840.JPG")
-mask = Image.open("data/mask-1350-sq.png")
+image1 = cci.CloudCoverApp("data/sample_images/11833.JPG", "data/mask-1350-sq.png")
+image2 = cci.CloudCoverApp("data/sample_images/11836.JPG", "data/mask-1350-sq.png")
+image3 = cci.CloudCoverApp("data/sample_images/11838.jpg", "data/mask-1350-sq.png")
+image4 = cci.CloudCoverApp("data/sample_images/11839.JPG", "data/mask-1350-sq.png")
+image5 = cci.CloudCoverApp("data/sample_images/11840.JPG", "data/mask-1350-sq.png")
+image6 = cci.CloudCoverApp("data/sample_images/11841.JPG", "data/mask-1350-sq.png")
 
-# test with resizing
-mask = mask.resize((mask.size[0] // 8, mask.size[1] // 8), Image.LANCZOS)
-image = image.resize((image.size[0] // 8, image.size[1] // 8), Image.LANCZOS)
-
-result = cci.mask_filter(image, mask)
-result_after_rb_filter = cci.red_blue_filter(result)
-final_result = cci.convolution_filter(result_after_rb_filter)
-
+print("Image 1 Cloud Cover", image1.get_cloud_cover_index())
+print("Image 2 Cloud Cover", image2.get_cloud_cover_index())
+print("Image 3 Cloud Cover", image3.get_cloud_cover_index())
+print("Image 4 Cloud Cover", image4.get_cloud_cover_index())
+print("Image 5 Cloud Cover", image5.get_cloud_cover_index())
+print("Image 6 Cloud Cover", image6.get_cloud_cover_index())
