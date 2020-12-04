@@ -10,7 +10,7 @@ description = "Cloud Cover Index: Determine cloud cover index from jpeg image"
 __version__ = "0.0.3"
 
 
-def mask_filter(image, mask):
+def mask_filter(image, mask, downscale_factor=1):
     """Applies a transparency mask to the given image.
     This method applies a transparency mask over an RGB
     image returning an RGBA image where its alpha channel
@@ -24,6 +24,8 @@ def mask_filter(image, mask):
     :param mask: A :class:`PIL.Image` image, must have only one band/channel. Both the width and
     height of the mask must be smaller than width and height of the image.
     :type mask: class:`PIL.Image`
+    :param downscale_factor: An optional factor to downscale the image.
+    :type downscale_factor: int
     :return: A :class:`PIL.Image` image in RGBA mode, keeping the original RGB
     values of the image and using the mask values for the alpha channel. The size of the returned
     image is the same as the size of the mask.
@@ -39,10 +41,17 @@ def mask_filter(image, mask):
         raise ValueError("Only RGB images are supported")
     if len(mask.getbands()) != 1:
         raise ValueError("Mask must have only one channel")
+    if downscale_factor < 1:
+        raise ValueError("Downscale factor must be grater than 1")
 
     # Crop the image if bigger
     if image.size[0] > mask.size[0] or image.size[1] > mask.size[1]:
         image = __crop_borders(image, mask.size)
+
+    # Downscale both image and mask
+    if downscale_factor != 1:
+        image = image.resize((image.size[0] // downscale_factor, image.size[1] // downscale_factor), Image.LANCZOS)
+        mask = mask.resize((mask.size[0] // downscale_factor, mask.size[1] // downscale_factor), Image.LANCZOS)
 
     return Image.merge("RGBA", image.split() + mask.split())
 
@@ -175,8 +184,8 @@ def __select_output_pixel(original_pixel, convolved_pixel):
 
 class CloudCoverApp:
 
-    def __init__(self, path, mask_path):
-        image = mask_filter(Image.open(path), Image.open(mask_path))
+    def __init__(self, path, mask_path, downscale_factor=1):
+        image = mask_filter(Image.open(path), Image.open(mask_path), downscale_factor=downscale_factor)
         image = red_blue_filter(image)
         image = convolution_filter(image)
 
