@@ -12,7 +12,7 @@ if __name__ == "__main__" and __package__ is None:
 
 import cloudcoverindex.cloudcoverindex as cci
 
-image = Image.open("data/sample_images/11840.JPG")
+image = Image.open("data/sample_images/11841.JPG")
 mask = Image.open("data/mask-1350-sq.png")
 
 # test with resizing

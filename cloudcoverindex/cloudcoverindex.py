@@ -7,7 +7,7 @@ from PIL import Image, ImageFilter
 from argparse import ArgumentParser, RawDescriptionHelpFormatter
 
 description = "Cloud Cover Index: Determine cloud cover index from jpeg image"
-__version__ = "0.0.1"
+__version__ = "0.0.3"
 
 
 def mask_filter(image, mask):
@@ -174,14 +174,33 @@ def __select_output_pixel(original_pixel, convolved_pixel):
 
 
 class CloudCoverApp:
-    def __init__(self, path):
-        pass  # TODO Implement this method
+
+    def __init__(self, path, mask_path):
+        image = mask_filter(Image.open(path), Image.open(mask_path))
+        image = red_blue_filter(image)
+        image = convolution_filter(image)
+
+        self.__image = image
+
 
     def get_cloud_cover_index(self):
-        pass  # TODO Implement this method
+        image_pixels = self.__image.load()
+        width, height = self.__image.size
+        total_pixels = 0
+        cloud_pixels = 0
+        for x in range(width):
+            for y in range(height):
+                l_band, a_band = image_pixels[x, y]
+                if a_band == 0:
+                    continue
+                total_pixels += 1
+                if l_band == 255:
+                    cloud_pixels += 1
+        return cloud_pixels / total_pixels
+
 
     def save(self, path):
-        pass  # TODO Implement this method
+        self.__image.save(path)
 
 
 # TODO simplify main() implementation
