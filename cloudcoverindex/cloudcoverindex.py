@@ -7,7 +7,7 @@ from PIL import Image, ImageFilter
 from argparse import ArgumentParser, RawDescriptionHelpFormatter
 
 description = "Cloud Cover Index: Determine cloud cover index from jpeg image"
-__version__ = "0.0.1"
+__version__ = "0.0.3"
 
 
 def mask_filter(image, mask):
@@ -174,10 +174,20 @@ def __select_output_pixel(original_pixel, convolved_pixel):
 
 
 class CloudCoverApp:
+    image = None
+
     def __init__(self, path):
+        self.image = Image.open(path)
+        try:
+            self.image.verify()
+        except:
+            raise OSError("Image file is broken")
         pass  # TODO Implement this method
 
     def get_cloud_cover_index(self):
+        rgb_im = self.image.convert('RGB')
+        for pixel in image:
+            if ()
         pass  # TODO Implement this method
 
     def save(self, path):
