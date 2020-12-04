@@ -1,6 +1,7 @@
-import cloudcoverindex.cloudcoverindex as cci
-import pytest
 from PIL import Image, ImageDraw
+
+# TODO add TestCase for downscale > 1
+from cloudcoverindex import filters
 
 
 def test_mask_filter(subtests):
@@ -19,7 +20,7 @@ def test_mask_filter(subtests):
     image = Image.new("RGB", size, (155, 155, 155))
     mask = Image.new("L", size, 0)
     with subtests.test(msg="Same Size, 0 transparency", image=image, mask=mask):
-        result = cci.mask_filter(image, mask)
+        result = filters.mask_filter(image, mask)
         assert_valid_composed_image(result, image, mask)
 
     # TestCase bigger width and height, mask pixels 255
@@ -28,7 +29,7 @@ def test_mask_filter(subtests):
     with subtests.test(msg="Bigger width and height, 255 transparency", image=image, mask=mask):
         central_rectangle = [50, 50, 150, 150]
         draw_rectangle(image, central_rectangle, (255, 0, 0))
-        result = cci.mask_filter(image, mask)
+        result = filters.mask_filter(image, mask)
         image = image.crop(central_rectangle)
         assert_valid_composed_image(result, image, mask)
 
@@ -38,7 +39,7 @@ def test_mask_filter(subtests):
     with subtests.test(msg="Bigger width, 155 transparency", image=image, mask=mask):
         central_rectangle = [50, 0, 150, height]
         draw_rectangle(image, central_rectangle, (255, 0, 0))
-        result = cci.mask_filter(image, mask)
+        result = filters.mask_filter(image, mask)
         image = image.crop(central_rectangle)
         assert_valid_composed_image(result, image, mask)
 
@@ -48,7 +49,7 @@ def test_mask_filter(subtests):
     with subtests.test(msg="Bigger width and height, 50 transparency", image=image, mask=mask):
         central_rectangle = [0, 50, width, 150]
         draw_rectangle(image, central_rectangle, (255, 0, 0))
-        result = cci.mask_filter(image, mask)
+        result = filters.mask_filter(image, mask)
         image = image.crop(central_rectangle)
         assert_valid_composed_image(result, image, mask)
 
@@ -80,9 +81,9 @@ def test_red_blue_filter(subtests):
     Test Partitions for Red Blue Filter
     Input:
     - Red Component: 0, 255, in between
-    - Blue Compontent 0, 255, in between
+    - Blue Component 0, 255, in between
     - input image: all White, all Black
-    - Transparency: transparent filters, not trnasparent filters
+    - Transparency: transparent filters, not transparent filters
     Output:
     - All white, All black, Both
     """
@@ -140,7 +141,7 @@ def test_red_blue_filter(subtests):
 
 
 def assert_color_all_pixels(image, size, expected_pixel_value):
-    res_pixels_map = cci.red_blue_filter(image).load()
+    res_pixels_map = filters.red_blue_filter(image).load()
     for x in range(size[0]):
         for y in range(size[1]):
             actual_pixel = res_pixels_map[x, y]
@@ -170,7 +171,7 @@ def test_convolution_filter(subtests):
     ]
     image = image_from_kernel(kernel, size)
     with subtests.test(msg="Convolution result 0", image=image):
-        assert_central_pixel_value(cci.convolution_filter(image), 0)
+        assert_central_pixel_value(filters.convolution_filter(image), 0)
 
     # TestCase Convolution result 5
     kernel = [
@@ -182,7 +183,7 @@ def test_convolution_filter(subtests):
     ]
     image = image_from_kernel(kernel, size)
     with subtests.test(msg="Convolution result 5", image=image):
-        assert_central_pixel_value(cci.convolution_filter(image), 0)
+        assert_central_pixel_value(filters.convolution_filter(image), 0)
 
     # TestCase Convolution result 7
     kernel = [
@@ -194,7 +195,7 @@ def test_convolution_filter(subtests):
     ]
     image = image_from_kernel(kernel, size)
     with subtests.test(msg="Convolution result 5", image=image):
-        assert_central_pixel_value(cci.convolution_filter(image), 0)
+        assert_central_pixel_value(filters.convolution_filter(image), 0)
 
     # TestCase Convolution result 8
     kernel = [
@@ -206,7 +207,7 @@ def test_convolution_filter(subtests):
     ]
     image = image_from_kernel(kernel, size)
     with subtests.test(msg="Convolution result 8, expected 0", image=image):
-        assert_central_pixel_value(cci.convolution_filter(image), 0)
+        assert_central_pixel_value(filters.convolution_filter(image), 0)
 
     # TestCase Convolution result 8
     kernel = [
@@ -218,7 +219,7 @@ def test_convolution_filter(subtests):
     ]
     image = image_from_kernel(kernel, size)
     with subtests.test(msg="Convolution result 8, expected 255", image=image):
-        assert_central_pixel_value(cci.convolution_filter(image), 255)
+        assert_central_pixel_value(filters.convolution_filter(image), 255)
 
     # TestCase Convolution result 9
     kernel = [
@@ -230,7 +231,7 @@ def test_convolution_filter(subtests):
     ]
     image = image_from_kernel(kernel, size)
     with subtests.test(msg="Convolution result 9, expected 255", image=image):
-        assert_central_pixel_value(cci.convolution_filter(image), 255)
+        assert_central_pixel_value(filters.convolution_filter(image), 255)
 
     # TestCase Convolution result 16
     kernel = [
@@ -242,7 +243,7 @@ def test_convolution_filter(subtests):
     ]
     image = image_from_kernel(kernel, size)
     with subtests.test(msg="Convolution result 16, expected 0", image=image):
-        assert_central_pixel_value(cci.convolution_filter(image), 0)
+        assert_central_pixel_value(filters.convolution_filter(image), 0)
 
     # TestCase Convolution result 16
     kernel = [
@@ -254,7 +255,7 @@ def test_convolution_filter(subtests):
     ]
     image = image_from_kernel(kernel, size)
     with subtests.test(msg="Convolution result 16, expected 255", image=image):
-        assert_central_pixel_value(cci.convolution_filter(image), 255)
+        assert_central_pixel_value(filters.convolution_filter(image), 255)
 
     # TestCase Convolution result 17
     kernel = [
@@ -266,7 +267,7 @@ def test_convolution_filter(subtests):
     ]
     image = image_from_kernel(kernel, size)
     with subtests.test(msg="Convolution result 17", image=image):
-        assert_central_pixel_value(cci.convolution_filter(image), 255)
+        assert_central_pixel_value(filters.convolution_filter(image), 255)
 
     # TestCase Convolution result 17
     kernel = [
@@ -278,7 +279,7 @@ def test_convolution_filter(subtests):
     ]
     image = image_from_kernel(kernel, size)
     with subtests.test(msg="Convolution result 17", image=image):
-        assert_central_pixel_value(cci.convolution_filter(image), 255)
+        assert_central_pixel_value(filters.convolution_filter(image), 255)
 
     # TestCase Convolution result 22
     kernel = [
@@ -290,7 +291,7 @@ def test_convolution_filter(subtests):
     ]
     image = image_from_kernel(kernel, size)
     with subtests.test(msg="Convolution result 22", image=image):
-        assert_central_pixel_value(cci.convolution_filter(image), 255)
+        assert_central_pixel_value(filters.convolution_filter(image), 255)
 
     # TestCase Convolution result 25
     kernel = [
@@ -302,7 +303,7 @@ def test_convolution_filter(subtests):
     ]
     image = image_from_kernel(kernel, size)
     with subtests.test(msg="Convolution result 25", image=image):
-        assert_central_pixel_value(cci.convolution_filter(image), 255)
+        assert_central_pixel_value(filters.convolution_filter(image), 255)
 
 
 def image_from_kernel(kernel, size):
@@ -319,4 +320,3 @@ def image_from_kernel(kernel, size):
 def assert_central_pixel_value(result_image, expected_value):
     result_pixels = result_image.load()
     assert result_pixels[2, 2][0] == expected_value
-
