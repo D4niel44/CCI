@@ -11,19 +11,19 @@ __version__ = "0.0.3"
 
 
 class CloudCoverApp:
-"""CloudCoverApp class that processes an image.
-It uses all filters and some methods from pillow
-to modify the image and extract it's cloud cover index.
-It also allows for the image to be saved.
+    """CloudCoverApp class that processes an image.
+    It uses all filters and some methods from pillow
+    to modify the image and extract it's cloud cover index.
+    It also allows for the image to be saved.
 
-:param path: path to image file
-:type path: str
-:param mask_path: path to the mask image file
-:type mask_path: str
-:param path: path where the processed image is to be saved at
-:type path: str
-"""
-
+    :param path: path to image file
+    :type path: str
+    :param mask_path: path to the mask image file
+    :type mask_path: str
+    :param path: path where the processed image is to be saved at
+    :type path: str
+    """
+    
     def __init__(self, path, mask_path, downscale_factor=1):
         """Constructor method that applies all filters to an image and keeps it as an attribute.
         First the mask_filter is applied to reduce image size and
