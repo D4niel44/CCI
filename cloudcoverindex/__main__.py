@@ -1,9 +1,8 @@
-#TODO add env python version control
-
 """
-Cloud Cover Index: Determine cloud cover index from jpeg image
+Cloud Cover Index: Determine cloud cover index from jpeg image(s)
 
-This module contains... TODO short description of contents
+This module checks the python version the user is running the program
+with to prevent any errors that might occur if it's run with too old a version.
 """
 
 import sys
