@@ -31,7 +31,7 @@ Para generar la documentación es necesario ejecutar los siguientes comandos.
 
 `cd docs && make html`
 
-La documentación se generará en el directorio `docs/build/[html|latex]`
+La documentación se generará en el directorio `docs/build/html`
 
 ## Resources
 - [Pillow](https://pillow.readthedocs.io/en/stable/)
