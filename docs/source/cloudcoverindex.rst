@@ -12,6 +12,14 @@ cloudcoverindex.cloudcoverindex module
    :undoc-members:
    :show-inheritance:
 
+cloudcoverindex.filters module
+------------------------------
+
+.. automodule:: cloudcoverindex.filters
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
 Module contents
 ---------------
 

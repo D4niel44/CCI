@@ -1,4 +1,5 @@
 import sys
+import os
 
 from PIL import Image
 from argparse import ArgumentParser, RawDescriptionHelpFormatter
@@ -105,16 +106,17 @@ def main():
     args = parser.parse_args(arguments)
 
     for path in args.paths:
-        app = CloudCoverApp(path, "data/mask-1350-sq.png")
+        app = CloudCoverApp(path, "data/mask-1350-sq.png", downscale_factor=4)
 
         image_name = ""
-        image_path, image_format = path.rsplit('.',1)
+        image_path, image_format = path.rsplit('.', 1)
         for char in reversed(image_path):
             if char == '/':
                 break
             image_name = str(char) + image_name
 
         if args.S:
+            os.makedirs("data/saved_images/", exist_ok=True)
             app.save("data/saved_images/" + image_name + "-seg.png")
             print("Saved image named \"" + image_name + "-seg.png\" to data/saved_images/...")
 
@@ -124,7 +126,7 @@ def main():
         if args.percentage:
             output += str(100.0*cloud_cover_index)[:5] + " %"
         else:
-            output += str(cloud_cover_index)
+            output += str("%.2f" % cloud_cover_index)
 
         print(output)
 

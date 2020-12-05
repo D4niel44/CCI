@@ -23,5 +23,5 @@ if __name__ == "__main__":
         print("Cloud Cover Index requires Python 3.6+\nYou are using Python %s, which is not supported by Cloud Cover Index" % python_version)
         sys.exit(1)
 
-    import cloudcoverindex
-    cloudcoverindex.main()
+    from cloudcoverindex.cloudcoverindex import main
+    main()

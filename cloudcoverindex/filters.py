@@ -7,20 +7,12 @@ def mask_filter(image, mask, downscale_factor=1):
     image returning an RGBA image where its alpha channel
     are the values of the mask channel.
     Requires the mask to be a one channel image.
-    :param image: A :class:`PIL.Image` image, must be in RGB mode. In case the image
-    size is bigger than the mask size the the image is cropped to match the mask size.
-    Note that the crop is done by removing the pixels in the corner, so the central pixels
-    remains. If another kind of crop is needed should be done beforehand.
-    :type image: class:`PIL.Image`
-    :param mask: A :class:`PIL.Image` image, must have only one band/channel. Both the width and
-    height of the mask must be smaller than width and height of the image.
-    :type mask: class:`PIL.Image`
+
+    :param image: An image, must be in RGB mode. If image size is bigger than mask size the image is cropped
+    :param mask: An image, must have only one band/channel. Width and height of mask must not exceed image dimensions
     :param downscale_factor: An optional factor to downscale the image.
     :type downscale_factor: int
-    :return: A :class:`PIL.Image` image in RGBA mode, keeping the original RGB
-    values of the image and using the mask values for the alpha channel. The size of the returned
-    image is the same as the size of the mask.
-    :rtype: class:`PIL.Image`
+    :return: An image in RGBA mode, keeping RGB values from image and adding mask as the A channel.
     """
     if image is None:
         raise TypeError("Invalid None type argument")
@@ -68,10 +60,9 @@ def red_blue_filter(image):
     is bigger than 0.95, otherwise converts the pixel to black.
     For the pixel is transparent the resulting greyscale band value will be 0.
     Requires The image to be in RGBA mode.
-    :param image: A :class:`PIL.Image` image.
-    :type image: class:`PIL.Image`
-    :return: A :class:`PIL.Image` LA image( greyscale with alpha channel).
-    :rtype: class:`PIL.Image`
+
+    :param image: An image.
+    :return: An LA image( greyscale with alpha channel).
     """
     if image is None:
         raise TypeError("Invalid None type argument")
@@ -119,16 +110,17 @@ def convolution_filter(image):
     The convolution filter is a simple mean 5x5 convolution filter but dividing the sum by 255.
     (Can be though of as counting every white pixel). Then the results are converted to binary (0, 255)
     values following the next rules.
+
     0 <= value <= 7 -> the returned pixel value is 0.
     7 < value <= 16 -> the returned pixel value doesnt change.
     16 < value <= 25 -> the returned pixel value is 255.
+
     Note that this filter is only applied to the L band of the image and in order to work properly
     the L band values must be either 0 or 255.
     Requires the image to be in mode LA.
+
     :param image: An Image in LA mode.
-    :return: The image that results from applying the convolution filter described
-    above to the provided image. The returned image contains two channels and the alpha channel
-    remains unchanged from the original image.
+    :return: An image. The returned image contains two channels and the alpha channel remains unchanged.
     """
     if image.mode != "LA":
         raise ValueError("Only LA images allowed")
